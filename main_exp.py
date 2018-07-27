@@ -13,6 +13,7 @@ import random as rn
 from keras import backend as K
 import gym
 import mujoco_py
+from collections import deque
 os.environ['TF_CPP_MIN_LOG_LEVEL']='3'  #Do not show gpu information when running tensorflow
 
 from GAC_learner import GAC_learner
@@ -190,6 +191,11 @@ if __name__ == '__main__':
     ## start training loop
     state = env.reset()
     buffer_size = state_buffer.get_size()
+
+    running_scores = []
+    rew_buf = deque(maxlen=100)
+    eps_rew = 0.0
+
     for i in trange(step_max):
 
         ## Draw an action from the current policy
@@ -197,6 +203,8 @@ if __name__ == '__main__':
 
         ## Take a step (Input actions are clipped to prevent runtime error of some gym environment)
         next_state, reward, done, _ = env.step(np.clip(action, a_min=a_space_low, a_max=a_space_high))
+
+        eps_rew += reward
 
         t = t + 1
         if t == T_max:
@@ -214,6 +222,10 @@ if __name__ == '__main__':
             state = env.reset()
             t_run =  t
             t = 0
+
+            rew_buf.append(eps_rew)
+            eps_rew = 0.0
+            running_scores.append((i, np.mean(rew_buf)))  # i is the number of timestep so far
 
         ## For increasing the trainig time
         ttt = time.time()
