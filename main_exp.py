@@ -167,6 +167,7 @@ if __name__ == '__main__':
     tf.set_random_seed(seed)
 
     tf_config = tf.ConfigProto(
+        log_device_placement=True,
         inter_op_parallelism_threads=4,
         intra_op_parallelism_threads=4
     )
