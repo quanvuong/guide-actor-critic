@@ -9,7 +9,8 @@
 #SBATCH --mail-type=END,FAIL,REQUEUE,STAGE_OUT
 #SBATCH --mail-user=qhv200@nyu.edu
 #SBATCH --partition=mujoco
-#SBATCh --exclude=aquila1
+#SBATCH --exclude=aquila1
+#SBATCH --qos=h480
 
 #SBATCH --array=0-99
 
