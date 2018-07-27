@@ -8,14 +8,15 @@ import os
 import platform
 import time
 import numpy as np
-import tensorflow as tf 
+import tensorflow as tf
 import random as rn
-from keras import backend as K 
+from keras import backend as K
 import gym
 import mujoco_py
 os.environ['TF_CPP_MIN_LOG_LEVEL']='3'  #Do not show gpu information when running tensorflow
 
 from GAC_learner import GAC_learner
+from tqdm import trange
 
 # A simple numpy array as reply buffer.
 class Data_buffer_nparray():
@@ -41,7 +42,7 @@ class Data_buffer_nparray():
         self.cur_index = self.cur_index + 1
         if self.cur_index >= self.max_size:
             self.cur_index = 0
-        
+
         if self.total_size < self.max_size:
             self.total_size = self.total_size + 1
         return
@@ -75,7 +76,7 @@ if __name__ == '__main__':
     ## Result option
     parser.add_argument("-log_level", "--log_level", dest="log_level", default=0, type=int, \
                 help="Amount of info. on the results. Set to 0 if only the return values are needed.")
-    parser.add_argument("-rd", "--render", dest="render", default=1, type=int, help="Render graphics flag")
+    parser.add_argument("-rd", "--render", dest="render", default=0, type=int, help="Render graphics flag")
 
     args = parser.parse_args()
     seed        = args.seed
@@ -86,12 +87,12 @@ if __name__ == '__main__':
     batch_size      = args.batch_size
     gamma           = args.gamma
     entropy_gamma   = args.entropy_gamma
-    step_max = args.step_max 
+    step_max = args.step_max
 
     tau         = args.tau
     lr_q        = args.lr_q
     lr_policy   = args.lr_policy
-    reg_q       = args.reg_q 
+    reg_q       = args.reg_q
     reg_policy  = args.reg_policy
 
     epsilon     = args.epsilon
@@ -136,7 +137,7 @@ if __name__ == '__main__':
         reward_path = "./Result/"
         try:
             import pathlib
-            pathlib.Path("./Result/" + env_name).mkdir(parents=True, exist_ok=True) 
+            pathlib.Path("./Result/" + env_name).mkdir(parents=True, exist_ok=True)
             reward_path = "./Result/" + env_name + "/"
             filename = reward_path + expname + ".txt"
             print("Result will be recoreded in %s" % (filename))
@@ -148,20 +149,20 @@ if __name__ == '__main__':
         model_path = "./Model/"
         try:
             import pathlib
-            pathlib.Path("./Model/" + env_name).mkdir(parents=True, exist_ok=True) 
+            pathlib.Path("./Model/" + env_name).mkdir(parents=True, exist_ok=True)
             model_path = "./Model/" + env_name + "/"
         except:
             save_model = 0
             print("A model directory does not exist and cannot be created. The policy models are not saved")
-            
+
     # Construct the learning agent
     learner = GAC_learner( ds=ds, da=da, sess=sess, \
                 epsilon=epsilon, entropy_gamma=entropy_gamma, n_taylor=n_taylor, min_cov=min_cov, \
                 gamma=gamma, tau=tau, lr_q=lr_q, lr_policy=lr_policy, \
                 reg_q=reg_q, reg_policy=reg_policy, action_bnds =[a_space_low[0], a_space_high[0]], log_level=log_level)
-                
+
     ## Reset the random seed
-    np.random.seed(seed)    
+    np.random.seed(seed)
 
     ## Allocate replay buffers for each variable. Can be combined into one buffer with some indexing.
     max_buffer_size = 1000000
@@ -189,9 +190,9 @@ if __name__ == '__main__':
     ## start training loop
     state = env.reset()
     buffer_size = state_buffer.get_size()
-    for i in range(0, step_max):
+    for i in trange(step_max):
 
-        ## Draw an action from the current policy 
+        ## Draw an action from the current policy
         action = learner.draw_action(state)
 
         ## Take a step (Input actions are clipped to prevent runtime error of some gym environment)
@@ -201,9 +202,9 @@ if __name__ == '__main__':
         if t == T_max:
             done = 1
 
-        ## Add the transition to the replay buffers and move to next the state 
+        ## Add the transition to the replay buffers and move to next the state
         state_buffer.append(state)
-        action_buffer.append(action)   
+        action_buffer.append(action)
         nextstate_buffer.append(next_state)
         reward_buffer.append(reward)
         done_buffer.append(done)
@@ -217,10 +218,10 @@ if __name__ == '__main__':
         ## For increasing the trainig time
         ttt = time.time()
 
-        ## Update the policy after collecting a sufficient number of transition samples. 
+        ## Update the policy after collecting a sufficient number of transition samples.
         buffer_size = state_buffer.get_size()
         if buffer_size >= min_batch_size:
-            ## Randomly draw minibatch transition samples 
+            ## Randomly draw minibatch transition samples
             indexes = np.random.permutation(np.arange(buffer_size))[0:batch_size]
             s_batch = state_buffer.get_data(indexes)
             a_batch = action_buffer.get_data(indexes)
@@ -236,11 +237,11 @@ if __name__ == '__main__':
                 beta_upd = 1
             else:
                 beta_upd = 0
-            
-            ## Update the policy network 
+
+            ## Update the policy network
             loss_pol, eta, omega = learner.update_policy(s_data=s_batch, beta_upd=beta_upd)
 
-            ## Record learning statistics 
+            ## Record learning statistics
             loss_pol_n  = loss_pol_n + loss_pol
             loss_q_n    = loss_q_n + loss_q
             eta_n       = eta_n + eta
@@ -254,33 +255,33 @@ if __name__ == '__main__':
         ## We use /env_test/ here so that testing does not affect /env/ used during training
         if np.mod(i + 1, test_interval) == 0 or i == 0:
             for nn in range(0, N_test):
-                state_te = env_test.reset() 
+                state_te = env_test.reset()
                 for t_te in range(0, T_max):
                     if render and nn == N_test-1:    # Only render the last test episode.
                         env_test.render()
-                        time.sleep(0.01)    
+                        time.sleep(0.01)
                     action_te = learner.get_action(state_te)    # get_action returns a deterministic action (Gaussian mean).
-                    next_state_te, reward_te, done_te, info_te = env_test.step(np.clip(action_te, a_min=a_space_low, a_max=a_space_high))  
+                    next_state_te, reward_te, done_te, info_te = env_test.step(np.clip(action_te, a_min=a_space_low, a_max=a_space_high))
 
                     state_te = next_state_te
-                    ret_te[test_iter, nn]  = ret_te[test_iter, nn]  + reward_te 
+                    ret_te[test_iter, nn]  = ret_te[test_iter, nn]  + reward_te
                     if done_te:
-                        break 
-                        
+                        break
+
             ## Compute the averaged tesst return and the standard error
             ret_mean = np.mean(ret_te[test_iter, :])
             ret_std = np.std(ret_te[test_iter, :]) / np.sqrt(N_test)
 
-            ## result variable records averaged test return and the standard error, and training time between each test interval 
+            ## result variable records averaged test return and the standard error, and training time between each test interval
             result = "Test iter %d (%4dK steps): avg. return %0.4f(%0.3f), time-in-between %0.3f(s)" \
                     % (test_iter, (i+1)//test_interval, ret_mean, ret_std, elapsed)
-            
+
             ## Add more summary of information during training for analysis to the result variable
             if log_level >= 1:
                 result += " || avg_loss_q %0.3f, avg_loss_p %0.3f, avg_eta %0.5f, avg_omega %0.5f, avg_beta %0.3f" \
                         % ( loss_q_n/test_interval, loss_pol_n/test_interval, eta_n/test_interval, omega_n/test_interval, beta_n/test_interval)
                 loss_q_n, loss_pol_n, eta_n, omega_n, beta_n = 0, 0, 0, 0, 0
-                
+
                 ## The policy's variance (diagonal entries of Sigma) and Q-value ##
                 if log_level >= 2 and buffer_size >= min_batch_size:
                     if da == 1:
@@ -295,7 +296,7 @@ if __name__ == '__main__':
                     result += 'q_value: %f' % q_after
 
                     ## Min and max across mini-batches of the variance and W = -Hessian/2 ##
-                    if log_level >= 3 and buffer_size >= min_batch_size: 
+                    if log_level >= 3 and buffer_size >= min_batch_size:
                         if da == 1:
                             result  += "|| minQ [%0.5f], maxQ [%0.5f], minW [%0.5f], maxW [%0.5f]" \
                                             % (learner.minQ, learner.maxQ, learner.minW, learner.minW)
@@ -315,20 +316,20 @@ if __name__ == '__main__':
                             result_maxW += "]"
                             result += " || " + result_minQ + result_maxQ + result_minW + result_maxW
 
-            ## Print \result\ to the standard output 
+            ## Print \result\ to the standard output
             print(result)
 
-            ## Also Append \result\ to the result file 
+            ## Also Append \result\ to the result file
             if save_result:
                 f = open(filename, 'a')
                 print(result, file=f)
                 f.close()
-            
+
             ## Save the model
-            if save_model and ( np.mod(i + 1, 100000) == 0 or i == step_max - 1):    
-                #learner.save_model(test_iter, expname, model_path = model_path)  
+            if save_model and ( np.mod(i + 1, 100000) == 0 or i == step_max - 1):
+                #learner.save_model(test_iter, expname, model_path = model_path)
                 try:
-                    learner.save_model(test_iter, expname, model_path = model_path)  
+                    learner.save_model(test_iter, expname, model_path = model_path)
                 except:
                     print("Cannot save model at test_iter %d" % test_iter)
                     save_model = 0
