@@ -999,3 +999,8 @@ Test iter 997 ( 997K steps): avg. return -148.2746(24.127), time-in-between 50.4
 Test iter 998 ( 998K steps): avg. return -172.7019(31.829), time-in-between 50.177(s)
 Test iter 999 ( 999K steps): avg. return -183.6891(21.713), time-in-between 50.102(s)
 Test iter 1000 (1000K steps): avg. return -121.5041(29.138), time-in-between 50.072(s)
+Test iter 0 (   0K steps): avg. return -1358.8072(131.431), time-in-between 0.000(s)
+Test iter 1 (   1K steps): avg. return -1041.8431(102.945), time-in-between 0.938(s)
+Test iter 2 (   2K steps): avg. return -1598.5807(12.072), time-in-between 37.275(s)
+Test iter 3 (   3K steps): avg. return -1477.4178(13.150), time-in-between 38.075(s)
+Test iter 4 (   4K steps): avg. return -1404.9795(32.812), time-in-between 37.549(s)
