@@ -26,7 +26,7 @@ from file_utils import pkl_res
 ENVS = ["InvertedPendulum-v2", "Hopper-v2", "InvertedDoublePendulum-v2", "Reacher-v2",
         "Swimmer-v2", "Walker2d-v2", "HalfCheetah-v2",
         'Ant-v2', 'Humanoid-v2', 'HumanoidStandup-v2']
-SEEDS = [i for i in range(0, 9)]
+SEEDS = [i for i in range(0, 10)]
 
 
 HYPER_PARAMS = list(itertools.product(ENVS, SEEDS))
