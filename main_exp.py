@@ -189,6 +189,7 @@ if __name__ == '__main__':
     a_space_high = a_space.high
     a_space_low = a_space.low
     print("Env: %s, seed: %d" % (env_name, seed))
+    sys.stdout.flush()
 
     # Set experiment name
     expname = "GAC-%d_%s_eps%0.4f_lrq%0.4f_lrp%0.4f_rq%0.4f_rp%0.4f_s%d" \
