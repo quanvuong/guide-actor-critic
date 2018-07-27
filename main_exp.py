@@ -264,18 +264,3 @@ if __name__ == '__main__':
         elapsed = elapsed + time.time() - ttt
 
     K.clear_session()
-
-    ## Plot the learning curve
-    if render:
-        import matplotlib.pyplot as plt
-
-        ret_mean = np.mean(ret_te, 1)
-        ret_std = np.std(ret_te, 1)/np.sqrt(N_test)
-        plt.errorbar(range(0, len(ret_mean)), ret_mean, yerr=ret_std, color="r", label=("GAC-%d" % (n_taylor))  )
-
-        plt.xlabel("Test iterations")
-        plt.ylabel("Averaged returns")
-        plt.legend()
-        plt.show()
-
-
