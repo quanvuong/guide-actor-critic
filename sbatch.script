@@ -12,7 +12,7 @@
 #SBATCH --exclude=aquila1
 #SBATCH --qos=h480
 
-#SBATCH --array=0-99
+#SBATCH --array=0-79
 
 source activate /gpfsnyu/scratch/qhv200/conda_envs/mujoco1.5_py352
 

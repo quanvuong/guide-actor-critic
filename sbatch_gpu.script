@@ -9,12 +9,11 @@
 #SBATCH --mail-type=END,FAIL,REQUEUE,STAGE_OUT
 #SBATCH --mail-user=qhv200@nyu.edu
 #SBATCH --exclude=gpu[1-3]
-#SBATCH --partition=chemcourses
+#SBATCH --partition=gpu
 #SBATCH --qos=h480
 #SBATCH --gres=gpu:1
 
-##SBATCH --array=80-99
-#SBATCH --array=92-99
+#SBATCH --array=80-91
 
 source activate /gpfsnyu/scratch/qhv200/conda_envs/tf1.8_py3.6
 
