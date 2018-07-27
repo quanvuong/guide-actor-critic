@@ -1,0 +1,20 @@
+#!/bin/sh
+
+#SBATCH --job-name=guide-actor-critic
+#SBATCH --output=%a_output.slurm
+
+#SBATCH --time=24:00:00
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=10000mb
+#SBATCH --mail-type=END,FAIL,REQUEUE,STAGE_OUT
+#SBATCH --mail-user=qhv200@nyu.edu
+#SBATCH --partition=mujoco
+#SBATCh --exclude=aquila1
+
+#SBATCH --array=0-99
+
+source activate /gpfsnyu/scratch/qhv200/conda_envs/mujoco1.5_py352
+
+cd /gpfsnyu/scratch/qhv200/trust_region_research_atari/guide-actor-critic/
+
+OMP_NUM_THREADS=4 MPLBACKEND=Agg python main_exp.py
