@@ -109,15 +109,15 @@ if __name__ == '__main__':
     # Set random seeds
     np.random.seed(seed)
     rn.seed(seed)
-    tf.set_random_seed(0)
+    tf.set_random_seed(seed)
     sess = tf.Session()
     K.set_session(sess)
 
     # Set Gym environment
     env = gym.make(env_name)    # This environment is used to collect data for training
-    env.seed(0)
+    env.seed(seed)
     env_test = gym.make(env_name)   # This environment is used for testing
-    env_test.seed(0)
+    env_test.seed(seed)
 
     # Set the action bound variables
     s_space = env.observation_space
