@@ -17,6 +17,6 @@
 
 source activate /gpfsnyu/scratch/qhv200/conda_envs/tf1.8_py3.6
 
-cd /gpfsnyu/scratch/qhv200/trust_region_research_atari/guide-actor-critic/
+cd /gpfsnyu/scratch/qhv200/trust_region_research_atari/gac_reproduce/
 
 OMP_NUM_THREADS=4 MPLBACKEND=Agg python main_exp.py
