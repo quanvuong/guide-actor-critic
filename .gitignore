@@ -2,3 +2,4 @@
 .idea/
 Result
 __pycache__
+*.slurm
