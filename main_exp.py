@@ -18,6 +18,57 @@ os.environ['TF_CPP_MIN_LOG_LEVEL']='3'  #Do not show gpu information when runnin
 
 from GAC_learner import GAC_learner
 from tqdm import trange
+import itertools
+import sys
+from file_utils import pkl_res
+
+
+ENVS = ["InvertedPendulum-v2", "Hopper-v2", "InvertedDoublePendulum-v2", "Reacher-v2",
+        "Swimmer-v2", "Walker2d-v2", "HalfCheetah-v2",
+        'Ant-v2', 'Humanoid-v2', 'HumanoidStandup-v2']
+SEEDS = [i for i in range(0, 9)]
+
+
+HYPER_PARAMS = list(itertools.product(ENVS, SEEDS))
+idx_to_hp = [(idx, item) for idx, item in enumerate(HYPER_PARAMS)]
+
+print(len(HYPER_PARAMS))
+sys.stdout.flush()
+
+
+def process_args(args):
+    def stringify_hp(hp):
+        return 'original_param'
+
+    def get_slurm_task_id():
+        def_val = 1
+        warning_msg = 'valid SLURM_ARRAY_TASK_ID not found. Using default value.'
+        try:
+            task_id = os.environ['SLURM_ARRAY_TASK_ID']
+            if task_id == '':
+                print(warning_msg)
+                return def_val
+            else:
+                return int(task_id)
+        except KeyError:
+            print(warning_msg)
+            return def_val
+
+    # Set env and seed based on task_id
+    task_id = get_slurm_task_id()
+    hp = HYPER_PARAMS[task_id]
+
+    args.hp = hp
+    args.env_name = hp[0]
+    args.seed = hp[1]
+    args.stringify_hp = stringify_hp
+    args.task_id = task_id
+
+    print(args)
+    sys.stdout.flush()
+
+    return args
+
 
 # A simple numpy array as reply buffer.
 class Data_buffer_nparray():
@@ -80,6 +131,9 @@ if __name__ == '__main__':
     parser.add_argument("-rd", "--render", dest="render", default=0, type=int, help="Render graphics flag")
 
     args = parser.parse_args()
+
+    args = process_args(args)
+
     seed        = args.seed
     env_name    = args.env_name
     T_max       = args.time_step
@@ -111,7 +165,13 @@ if __name__ == '__main__':
     np.random.seed(seed)
     rn.seed(seed)
     tf.set_random_seed(seed)
-    sess = tf.Session()
+
+    tf_config = tf.ConfigProto(
+        inter_op_parallelism_threads=4,
+        intra_op_parallelism_threads=4
+    )
+
+    sess = tf.Session(config=tf_config)
     K.set_session(sess)
 
     # Set Gym environment
@@ -264,3 +324,5 @@ if __name__ == '__main__':
         elapsed = elapsed + time.time() - ttt
 
     K.clear_session()
+
+    pkl_res(running_scores, args)
