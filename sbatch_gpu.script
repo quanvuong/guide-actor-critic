@@ -13,7 +13,7 @@
 #SBATCH --qos=h480
 #SBATCH --gres=gpu:1
 
-#SBATCH --array=80-91
+#SBATCH --array=92-99
 
 source activate /gpfsnyu/scratch/qhv200/conda_envs/tf1.8_py3.6
 
