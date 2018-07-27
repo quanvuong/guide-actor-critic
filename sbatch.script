@@ -4,7 +4,7 @@
 #SBATCH --output=%a_output.slurm
 
 #SBATCH --time=7-00:00:00
-#SBATCH --cpus-per-task=4
+#SBATCH --cpus-per-task=3
 #SBATCH --mem=10000mb
 #SBATCH --mail-type=END,FAIL,REQUEUE,STAGE_OUT
 #SBATCH --mail-user=qhv200@nyu.edu
@@ -12,7 +12,8 @@
 #SBATCH --exclude=aquila1
 #SBATCH --qos=h480
 
-#SBATCH --array=0-79
+##SBATCH --array=0-79
+#SBATCH --array=92-99
 
 source activate /gpfsnyu/scratch/qhv200/conda_envs/mujoco1.5_py352
 
