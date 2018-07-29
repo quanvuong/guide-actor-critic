@@ -258,7 +258,11 @@ if __name__ == '__main__':
     rew_buf = deque(maxlen=100)
     eps_rew = 0.0
 
-    for i in trange(step_max):
+    for i in range(step_max):
+
+        if i % 10000 == 0 and i > 0:
+            print('Step:', i)
+            sys.stdout.flush()
 
         ## Draw an action from the current policy
         action = learner.draw_action(state)
