@@ -284,9 +284,10 @@ if __name__ == '__main__':
             state = env.reset()
             t_run =  t
             t = 0
-
             rew_buf.append(eps_rew)
             eps_rew = 0.0
+
+        if i % 2048 == 0 and rew_buf:
             running_scores.append((i, np.mean(rew_buf)))  # i is the number of timestep so far
 
         ## For increasing the trainig time
